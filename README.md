@@ -1,12 +1,12 @@
 # Let a model coordinate nonprofit follow-up
 
-This example keeps the decision narrow: the model picks one of three named nonprofit operations, and plain Python runs each exactly once. Infrai gives you an OpenAI-compatible `base_url`, so the official client and its typed objects stay familiar while a single `INFRAI_API_KEY` covers the wider capability set on the same backend. That's one key, one api, one bill for everything.
+In this example, the decision is narrow: let the model pick among three named nonprofit operations, while plain Python still executes each operation exactly once. Infrai gives you the OpenAI-compatible `base_url`, so the official client and its typed chat-completion objects stay familiar while one `INFRAI_API_KEY` can cover the wider capability set behind the same backend.
 
-Parsing prose and inferring actions later looks shorter up front. Explicit tool schemas make the allowed decisions reviewable and keep the model out of the operation store. Here the model can send a donor receipt, schedule a volunteer reminder, or record a campaign snapshot, then read tool results and write a final summary.
+The other path is to parse prose and infer actions later. That feels shorter on paper, but explicit tool schemas make the allowed decisions reviewable and keep the model away from the operation store. Here the model may send a donor receipt, schedule a volunteer reminder, or record a campaign snapshot, then it reads the tool results and writes a final summary.
 
 ## Run the campaign-close example
 
-Use Python 3.11+. Make a venv, put the credential in the process environment:
+Use Python 3.11 or newer, create an environment, and provide the credential through the process environment:
 
 ```bash
 python -m venv .venv
@@ -16,19 +16,19 @@ export INFRAI_API_KEY="your-key"
 python campaign_service.py
 ```
 
-In another terminal, with the service still up:
+In another terminal, with the service still running:
 
 ```bash
 python run_example.py
 ```
 
-Input names Jordan's donation, Casey's shift, and Spring Drive totals. Expected response has three completed operations with stable IDs and a short model summary. Repeating the same request with the same `request_id` reuses those operation records.
+The input names Jordan's donation, Casey's shift, and the Spring Drive totals. The expected response contains three completed operations with stable operation IDs and a short model-written summary; repeating the same request with the same `request_id` reuses those operation records.
 
 ## Where the boundary sits
 
-`nonprofit_automation.py` owns the tool definitions and the loop. Every model turn uses `model="auto"`. A turn with tool calls runs locally and appends a tool result; a turn without calls ends the loop. `NonprofitOperations` is an observable in-memory boundary for the example: its operation ID comes from request ID, tool name, and canonical args, so retry behavior is easy to inspect before you swap its three methods for email, scheduling, and reporting adapters.
+`nonprofit_automation.py` owns both the tool definitions and the loop. Every model turn uses `model="auto"`; a turn with tool calls runs locally and is appended as a tool result, while a turn without calls ends the loop. `NonprofitOperations` is intentionally an observable in-memory boundary for the example: its operation ID is derived from the caller's request ID, tool name, and canonical arguments, which makes the retry behavior easy to inspect before swapping its three methods for email, scheduling, and reporting adapters.
 
-`campaign_service.py` adds typed request and response models. Callers must provide `request_id` and `instruction`. The response returns `summary` and the concrete `operations` chosen for that instruction.
+`campaign_service.py` adds typed request and response models. Callers must provide `request_id` and `instruction`; the response returns `summary` and the concrete `operations` chosen for that instruction.
 
 ## Verify the business decision offline
 
@@ -38,7 +38,7 @@ The focused test scripts two model turns and repeats one receipt call on purpose
 pytest -q
 ```
 
-No API key or network needed for this test.
+No API key or network connection is used by this test.
 
 ## License
 
@@ -46,7 +46,7 @@ MIT
 
 ## Production notes: Nonprofit Tool Calling Service
 
-Above is the happy path. The production checklist: The details below apply to Nonprofit Tool Calling Service.
+That is the happy path. The production checklist below applies to Nonprofit Tool Calling Service.
 
 **Account & key**
 
