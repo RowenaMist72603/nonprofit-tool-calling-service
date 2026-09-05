@@ -1,8 +1,8 @@
 # Let a model coordinate nonprofit follow-up
 
-In this example, the decision is narrow: let the model pick among three named nonprofit operations, while plain Python still executes each operation exactly once. Infrai gives you the OpenAI-compatible `base_url`, so the official client and its typed chat-completion objects stay familiar while one `INFRAI_API_KEY` can cover the wider capability set behind the same backend.
+The decision in this example is narrow: let the model choose among three named nonprofit operations, while ordinary Python remains responsible for executing each operation exactly once. Infrai supplies the OpenAI-compatible `base_url`, so the official client and its typed chat-completion objects stay familiar while a single `INFRAI_API_KEY` can cover the broader capability set behind the same backend.
 
-The other path is to parse prose and infer actions later. That feels shorter on paper, but explicit tool schemas make the allowed decisions reviewable and keep the model away from the operation store. Here the model may send a donor receipt, schedule a volunteer reminder, or record a campaign snapshot, then it reads the tool results and writes a final summary.
+The alternative is to parse prose and infer actions afterward; that looks shorter at first, but explicit tool schemas make the allowed decisions reviewable and keep the model away from the operation store. Here the model may send a donor receipt, schedule a volunteer reminder, or record a campaign snapshot, then it reads the tool results and writes a final summary.
 
 ## Run the campaign-close example
 
@@ -26,13 +26,13 @@ The input names Jordan's donation, Casey's shift, and the Spring Drive totals. T
 
 ## Where the boundary sits
 
-`nonprofit_automation.py` owns both the tool definitions and the loop. Every model turn uses `model="auto"`; a turn with tool calls runs locally and is appended as a tool result, while a turn without calls ends the loop. `NonprofitOperations` is intentionally an observable in-memory boundary for the example: its operation ID is derived from the caller's request ID, tool name, and canonical arguments, which makes the retry behavior easy to inspect before swapping its three methods for email, scheduling, and reporting adapters.
+`nonprofit_automation.py` owns both the tool definitions and the loop. Every model turn uses `model="auto"`; a turn with tool calls is executed locally and appended as a tool result, while a turn without calls ends the loop. `NonprofitOperations` is deliberately an observable in-memory boundary for the example: its operation ID is derived from the caller's request ID, tool name, and canonical arguments, which makes the retry behavior easy to inspect before replacing its three methods with email, scheduling, and reporting adapters.
 
 `campaign_service.py` adds typed request and response models. Callers must provide `request_id` and `instruction`; the response returns `summary` and the concrete `operations` chosen for that instruction.
 
 ## Verify the business decision offline
 
-The focused test scripts two model turns and repeats one receipt call on purpose. It expects two reported tool results to share one operation ID, only one stored operation, and a final receipt summary:
+The focused test scripts two model turns and deliberately repeats one receipt call. It expects two reported tool results to share one operation ID, only one stored operation, and a final receipt summary:
 
 ```bash
 pytest -q
@@ -46,7 +46,7 @@ MIT
 
 ## Production notes: Nonprofit Tool Calling Service
 
-That is the happy path. The production checklist below applies to Nonprofit Tool Calling Service.
+Above is the happy path. The production checklist: The details below apply to Nonprofit Tool Calling Service.
 
 **Account & key**
 
